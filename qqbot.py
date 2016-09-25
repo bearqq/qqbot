@@ -140,7 +140,7 @@ class QQBot:
         try:
             E_shown=showImage(self.qrcodePath)
         except:
-            pass
+            E_shown=1
         if E_shown:
             QLogger.warning('', exc_info=True)
             QLogger.warning('自动弹出二维码图片失败，请手动打开图片并用手机QQ扫描，图片地址 %s' % self.qrcodePath)
