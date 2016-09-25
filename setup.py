@@ -15,8 +15,8 @@ setup(
     description = "QQBot: A conversation robot base on Tencent's SmartQQ",
     author = 'pandolia',
     author_email = 'pandolia@yeah.net',
-    url = 'https://github.com/pandolia/qqbot/',
-    download_url = 'https://github.com/pandolia/qqbot/archive/v1.8.2.tar.gz',
+    url = 'https://github.com/bearqq/qqbot/',
+    #download_url = 'https://github.com/pandolia/qqbot/archive/v1.8.2.tar.gz',
     keywords = ['QQBot', 'conversation robot', 'tencent', 'qq', 'web', 'network', 'python', 'http'],
     classifiers = [],
 )

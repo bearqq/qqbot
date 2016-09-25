@@ -1,11 +1,12 @@
 一、介绍
 ---------
 
-QQBot 是一个用 python 实现的、基于腾讯 SmartQQ 协议的简单 QQ 机器人，可运行在 Linux 、 Windows 和 Mac OSX 平台下，所有代码均集成在一个 [qqbot.py][code] 文件中，代码量仅 500 余行（不包括注释）。程序采用双线程的方式运行，且尽可能的减少了网络和登录错误（特别是所谓的 103 error ）发生的概率。
+QQBot 是一个用 python3 实现的、基于腾讯 SmartQQ 协议的简单 QQ 机器人，可运行在 Linux 、 Windows 和 Mac OSX 平台下，所有代码均集成在一个 [qqbot.py][code] 文件中，代码量仅 500 余行（不包括注释）。程序采用双线程的方式运行，且尽可能的减少了网络和登录错误（特别是所谓的 103 error ）发生的概率。
 
-[code]: https://raw.githubusercontent.com/pandolia/qqbot/master/qqbot.py
+[code]: https://raw.githubusercontent.com/bearqq/qqbot/master/qqbot.py
 
-本项目 github 地址： <https://github.com/pandolia/qqbot/>
+本项目 github 地址(python3)： <https://github.com/bearqq/qqbot>
+原项目 github 地址(python2)： <https://github.com/pandolia/qqbot>
 
 你可以通过扩展 QQBot 来实现：
 
@@ -13,23 +14,20 @@ QQBot 是一个用 python 实现的、基于腾讯 SmartQQ 协议的简单 QQ �
 * 自动消息推送
 * 聊天机器人
 * 通过 QQ 远程控制电脑、智能家电
+* 实现收发表情
 
 
 二、安装方法
 -------------
 
-在 Python 2.7 下使用，用 pip 安装，安装命令：
-
-    $ pip install qqbot
-
-也可以直接下载 [qqbot.py][code] 运行，但需先安装 [requests](https://pypi.python.org/pypi/requests) 库。
+直接下载 [qqbot.py][code] 运行，但需先安装 [requests](https://pypi.python.org/pypi/requests) 库。
 
 三、使用方法
 -------------
 
 ##### 1. 启动 QQBot
 
-在命令行输入： **qqbot** ，或直接运行 [qqbot.py][code] ： **python qqbot.py** 。启动过程中会自动弹出二维码图片（Linux下需安装有 gvfs ，否则需要手动打开图片），需要用手机 QQ 客户端扫码并授权登录。启动成功后，会将本次登录信息保存到本地文件中，下次启动时，可以输入： **qqbot qq号码**，或：**python qqbot.py qq号码** ，先尝试从本地文件中恢复登录信息（不需要手动扫码），只有恢复不成功或登录信息已过期时才会需要手动扫码登录。
+在命令行输入： **qqbot** ，或直接运行 [qqbot.py][code] ： **python3 qqbot.py** 。启动过程中会自动弹出二维码图片（Linux下需安装有 gvfs ，否则需要手动打开图片），需要用手机 QQ 客户端扫码并授权登录。启动成功后，会将本次登录信息保存到本地文件中，下次启动时，可以输入： **qqbot qq号码**，或：**python3 qqbot.py qq号码** ，先尝试从本地文件中恢复登录信息（不需要手动扫码），只有恢复不成功或登录信息已过期时才会需要手动扫码登录。
 
 ##### 2. 操作 QQBot
 
@@ -114,7 +112,10 @@ QQBot 登录完成后，可以进行消息收发了，且 好友/群/讨论组 �
 
     ('', 0, 0, '')
 
-**send** 方法的三个参数为 **msgType** 、 **to_uin** 和 **message** ，分别代表 **消息类型** 、**接收者的 uin** 以及 **消息内容** ，消息内容必须是一个 **utf8** 编码的 string 。
+**send** 方法的三个参数为 **msgType** 、 **to_uin** 和 **message** ，分别代表 **消息类型** 、**接收者的 uin** 以及 **消息内容** 。
+
+消息内容必须是一个 Unicode 编码的 string , 或者为list。
+如[['face',98],'123'] 将发送 /抠鼻123。
 
 请注意：这里说的 **uin** 不是 好友/群/讨论组 的 **qq 号码** ，而是每次登录成功后给该 好友/群/讨论组 分配的的一个 **临时 id** 。用以下语句可以通过 **uin** 获得好友 **qq 号码**：
 
@@ -180,7 +181,5 @@ QQBot 参考了以下开源项目：
 
 在此感谢以上两位作者的无私分享，特别是感谢 ScienJus 对 SmartQQ 协议所做出的深入细致的分析。
 
-七、反馈
----------
+This repo is forked from https://github.com/pandolia/qqbot.
 
-有任何问题或建议可以发邮件给我，邮箱： <pandolia@yeah.net> 。

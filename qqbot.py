@@ -1,48 +1,26 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
+#!/usr/bin/python
 """
 QQBot -- A conversation robot base on Tencent's SmartQQ
-website: https://github.com/pandolia/qqbot/
-author: pandolia@yeah.net
+This fork is for python3
+website: https://github.com/bearqq/qqbot
+author: pandolia@yeah.net, bbbbqqq@gmail.com
 """
 
 QQBotVersion = "QQBot-v1.8.2"
 
 import json, os, logging, pickle, sys, time, random, platform, subprocess
-import requests, Queue, threading
+import requests, threading
+from multiprocessing.dummy import Queue
 
-# 'utf8', 'UTF8', 'utf-8', 'utf_8', None are all represent the same encoding
-def codingEqual(coding1, coding2):
-    return coding1 is None or coding2 is None or \
-           coding1.replace('-', '').replace('_', '').lower() == \
-           coding2.replace('-', '').replace('_', '').lower()
-
-class CodingWrappedWriter:
-    def __init__(self, coding, writer):
-        self.coding, self.writer = coding, writer
-
-    def write(self, s):
-        return self.writer.write(s.decode(self.coding).encode(self.writer.encoding))
-
-    def flush(self):
-        return self.writer.flush()
-
-# 在 windows consoler 下， 运行 print "中文" 会出现乱码
-# 请使用： utf8_stdout.write("中文\n")
-# 相当于： sys.stdout.write("中文\n".decode('utf8').encode(sys.stdout.encoding))
-if codingEqual('utf8', sys.stdout.encoding):
-    utf8_stdout = sys.stdout
-else:
-    utf8_stdout = CodingWrappedWriter('utf8', sys.stdout)
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 def setLogger():
+    logging.basicConfig(format='[%(asctime)s] [%(name)s %(levelname)s] %(message)s',
+                    level=logging.INFO)
     logger = logging.getLogger(QQBotVersion)
-    if not logger.handlers:
-        logging.getLogger("").setLevel(logging.CRITICAL)
-        logger.setLevel(logging.INFO)
-        ch = logging.StreamHandler(utf8_stdout) # 可以在 windows 下正确输出 utf8 编码的中文字符串
-        ch.setFormatter(logging.Formatter('[%(asctime)s] [%(name)s %(levelname)s] %(message)s'))
-        logger.addHandler(ch)
+    logger.setLevel(logging.INFO)
     return logger
 
 QLogger = setLogger()
@@ -148,7 +126,7 @@ class QQBot:
             Referer = 'https://ui.ptlogin2.qq.com/cgi-bin/login?daid=164&target=self&style=16&mibao_css=m_webqq&' + \
                       'appid=501004106&enable_qlogin=0&no_verifyimg=1&s_url=http%3A%2F%2Fw.qq.com%2Fproxy.html&' + \
                       'f_url=loginerroralert&strong_login=1&login_state=10&t=20131024001'
-        ).content
+        ).content.decode('utf-8')
     
     def getQrcode(self):
         QLogger.info('登录 Step1 - 获取二维码')
@@ -160,10 +138,12 @@ class QQBot:
         with open(self.qrcodePath, 'wb') as f:
             f.write(qrcode)
         try:
-            showImage(self.qrcodePath)
+            E_shown=showImage(self.qrcodePath)
         except:
+            pass
+        if E_shown:
             QLogger.warning('', exc_info=True)
-            QLogger.warning('自动弹出二维码图片失败，请手动打开图片并用手机QQ扫描，图片地址 file://%s' % self.qrcodePath)
+            QLogger.warning('自动弹出二维码图片失败，请手动打开图片并用手机QQ扫描，图片地址 %s' % self.qrcodePath)
     
     def waitForAuth(self):
         while True:
@@ -207,7 +187,7 @@ class QQBot:
                   (self.ptwebqq, self.clientid, repr(random.random())),
             Referer = 'http://s.web2.qq.com/proxy.html?v=20130916001&callback=1&id=1',
             Origin = 'http://s.web2.qq.com'
-        )['vfwebqq'].encode('utf8')
+        )['vfwebqq']#.encode('utf8')
     
     def getUinAndPsessionid(self):
         QLogger.info('登录 Step5 - 获取uin和psessionid')
@@ -222,7 +202,7 @@ class QQBot:
             Origin = 'http://d1.web2.qq.com'
         )
         self.uin = result['uin']
-        self.psessionid = result['psessionid'].encode('utf8')
+        self.psessionid = result['psessionid']
         self.hash = qHash(self.uin, self.ptwebqq)
 
     def testLogin(self):
@@ -245,7 +225,7 @@ class QQBot:
         ss, self.buddies, self.buddiesDictU, self.buddiesDictQ = [], [], {}, {}
         for info in result['info']:
             uin = info['uin']
-            name = info['nick'].encode('utf-8')
+            name = info['nick']#.encode('utf-8')
             qq = self.smartRequest(
                 url = 'http://s.web2.qq.com/api/get_friend_uin2?tuin=%d&type=1&vfwebqq=%s&t=0.1' % \
                       (uin, self.vfwebqq),
@@ -271,7 +251,7 @@ class QQBot:
         ss, self.groups, self.groupsDictU, self.groupsDictQ = [], [], {}, {}
         for info in result['gnamelist']:
             uin = info['gid']
-            name = info['name'].encode('utf-8')
+            name = info['name']#.encode('utf-8')
             qq = self.smartRequest(
                 url = 'http://s.web2.qq.com/api/get_friend_uin2?tuin=%d&type=4&vfwebqq=%s&t=0.1' % \
                       (uin, self.vfwebqq),
@@ -297,7 +277,7 @@ class QQBot:
         ss, self.discusses, self.discussesDict = [], [], {}
         for info in result['dnamelist']:
             uin = info['did']
-            name = info['name'].encode('utf-8')
+            name = info['name']#.encode('utf-8')
             discuss = dict(uin=uin, name=name)
             self.discusses.append(discuss)
             self.discussesDict[uin] = discuss
@@ -311,7 +291,7 @@ class QQBot:
         self.fetchBuddies()
         self.fetchGroups()
         self.fetchDiscusses()
-        self.nick = self.fetchBuddyDetailInfo(self.uin)['nick'].encode('utf8')
+        self.nick = self.fetchBuddyDetailInfo(self.uin)['nick']#.encode('utf8')
     
     def fetchBuddyDetailInfo(self, uin):
         return self.smartRequest(
@@ -340,7 +320,7 @@ class QQBot:
             from_uin = result['value']['from_uin']
             buddy_uin = result['value'].get('send_uin', from_uin)
             msg = ''.join(
-                m.encode('utf8') if isinstance(m, unicode) else "[face%d]" % m[1] if isinstance(m, list) else ''\
+                m if isinstance(m, str) else "[face%d]" % m[1] if isinstance(m, list) else ''\
                 for m in result['value']['content'][1:]
             )
             pollResult = msgType, from_uin, buddy_uin, msg
@@ -356,6 +336,8 @@ class QQBot:
             self._send(msgType, to_uin, front)
 
     def _send(self, msgType, to_uin, msg):
+        if type(msg)==str:
+            msg=[msg]
         self.msgId += 1        
         if self.msgId % 10 == 0:
             QLogger.info('已连续发送10条消息，强制 sleep 10秒，请等待...')
@@ -373,10 +355,9 @@ class QQBot:
             data = {
                 'r': json.dumps({
                     sendTag[msgType]: to_uin,
-                    "content": json.dumps([
-                        msg,
-                        ["font", {"name": "宋体", "size": 10, "style": [0,0,0], "color": "000000"}]
-                    ]),
+                    "content": json.dumps(
+                        msg+[["font", {"name": "宋体", "size": 10, "style": [0,0,0], "color": "000000"}]]
+                        ),
                     "face": 522,
                     "clientid": self.clientid,
                     "msg_id": self.msgId,
@@ -388,9 +369,9 @@ class QQBot:
         QLogger.info('向 %s%s 发送消息成功' % (msgType, to_uin))
 
     def urlGet(self, url, **kw):
-        time.sleep(0.2)
+        time.sleep(0.1)
         self.session.headers.update(kw)
-        return self.session.get(url)
+        return self.session.get(url, verify=False)
 
     def smartRequest(self, url, data=None, repeatOnDeny=2, sessionObj=None, **kw):
         time.sleep(0.1)
@@ -401,9 +382,9 @@ class QQBot:
             session.headers.update(**kw)
             try:
                 if data is None:
-                    html = session.get(url).content
+                    html = session.get(url).content.decode('utf-8')
                 else:
-                    html = session.post(url, data=data).content
+                    html = session.post(url, data=data).content.decode('utf-8')
                 result = json.loads(html)
             except (requests.ConnectionError, ValueError):
                 i += 1
@@ -430,7 +411,7 @@ class QQBot:
     helpInfo = '帮助命令："-help"'
 
     def Run(self):
-        self.msgQueue = Queue.Queue()
+        self.msgQueue = Queue()
         self.stopped = False
 
         pullThread = threading.Thread(target=self.pullForever)
@@ -525,8 +506,7 @@ def showImage(filename):
         retcode = subprocess.call(['open', filename])
     else:
         retcode = 1
-    if retcode:
-        raise
+    return retcode
 
 def qHash(x, K):
     N = [0] * 4
@@ -558,8 +538,8 @@ def utf8Partition(msg, n):
         return msg, ''
     else:
         # All utf8 characters start with '0xxx-xxxx' or '11xx-xxxx'
-        while n > 0 and ord(msg[n]) >> 6 == 2:
-            n -= 1
+        #while n > 0 and ord(msg[n]) >> 6 == 2:
+            #n -= 1
         return msg[:n], msg[n:]
 
 def main():
